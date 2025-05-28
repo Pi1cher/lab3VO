@@ -1,13 +1,16 @@
-// gram_schmidt.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <omp.h>
 
-#define N 1000 // кількість рядків
-#define M 500  // кількість стовпців
+#define N 1000
+#define M 500
 
-// ініціалізація випадкової матриці з контрольованим seed
+// Прототипи функцій
+double vector_norm(double *v, int len);
+double dot_product(double *a, double *b, int len);
+double *A_column(double **A, int col, int n);
+
 void generate_matrix(double **A, int rows, int cols, unsigned int seed) {
     srand(seed);
     for (int i = 0; i < rows; i++)
@@ -15,7 +18,6 @@ void generate_matrix(double **A, int rows, int cols, unsigned int seed) {
             A[i][j] = ((double)rand() / RAND_MAX) * 2.0 - 1.0;
 }
 
-// норма вектора
 double vector_norm(double *v, int len) {
     double sum = 0.0;
     #pragma omp parallel for reduction(+:sum)
@@ -25,7 +27,6 @@ double vector_norm(double *v, int len) {
     return sqrt(sum);
 }
 
-// добуток двох векторів
 double dot_product(double *a, double *b, int len) {
     double sum = 0.0;
     #pragma omp parallel for reduction(+:sum)
@@ -35,36 +36,41 @@ double dot_product(double *a, double *b, int len) {
     return sum;
 }
 
-// QR-розклад класичним методом Грама-Шмідта
-void gram_schmidt(double **A, double **Q, double **R, int n, int m) {
-    for (int k = 0; k < m; k++) {
-        for (int i = 0; i < n; i++)
-            Q[i][k] = A[i][k];
-        
-        for (int j = 0; j < k; j++) {
-            R[j][k] = dot_product(Q_column(Q, j, n), A_column(A, k, n), n);
-            #pragma omp parallel for
-            for (int i = 0; i < n; i++) {
-                Q[i][k] -= R[j][k] * Q[i][j];
-            }
-        }
-
-        R[k][k] = vector_norm(Q_column(Q, k, n), n);
-        #pragma omp parallel for
-        for (int i = 0; i < n; i++) {
-            Q[i][k] /= R[k][k];
-        }
-    }
-}
-
+// Функція для виділення колонки матриці у вектор
 double *A_column(double **A, int col, int n) {
     double *v = malloc(n * sizeof(double));
     for (int i = 0; i < n; i++) v[i] = A[i][col];
     return v;
 }
 
-double *Q_column(double **Q, int col, int n) {
-    return A_column(Q, col, n); // те саме
+// Класичний Грама-Шмідт
+void gram_schmidt(double **A, double **Q, double **R, int n, int m) {
+    for (int k = 0; k < m; k++) {
+        for (int i = 0; i < n; i++)
+            Q[i][k] = A[i][k];
+
+        for (int j = 0; j < k; j++) {
+            double *qj = A_column(Q, j, n);
+            double *ak = A_column(A, k, n);
+            R[j][k] = dot_product(qj, ak, n);
+            free(ak);
+
+            #pragma omp parallel for
+            for (int i = 0; i < n; i++) {
+                Q[i][k] -= R[j][k] * qj[i];
+            }
+            free(qj);
+        }
+
+        double *qk = A_column(Q, k, n);
+        R[k][k] = vector_norm(qk, n);
+        free(qk);
+
+        #pragma omp parallel for
+        for (int i = 0; i < n; i++) {
+            Q[i][k] /= R[k][k];
+        }
+    }
 }
 
 double **alloc_matrix(int rows, int cols) {
