@@ -1,0 +1,15 @@
+#!/bin/bash
+#PBS -N qr_gram_schmidt
+#PBS -l nodes=1:ppn=8
+#PBS -l walltime=01:00:00
+#PBS -j oe
+#PBS -o output.txt
+cd $PBS_O_WORKDIR
+
+module load gcc
+gcc -fopenmp -O2 gram_schmidt.c -o qr
+
+for p in {1..8}
+do
+    ./qr $p >> results.txt
+done
