@@ -54,10 +54,11 @@ int main(int argc, char* argv[]) {
 
     if (rank == 0) {
         double elapsed = end - start;
-        ofstream fout("result_" + to_string(size) + ".txt");
-        fout << "processes,time,result\n";
-        fout << size << "," << elapsed << "," << global_result << "\n";
-        fout.close();
+        ofstream fout("result_" + to_string(threads) + ".txt");
+        fout << "Threads:"<< threads << "\n";
+        fout << "Time:"<< elapsed << "\n";
+        fout << "Result:"<< global_result << "\n";
+        fout.close(); 
     }
 
     MPI_Finalize();
