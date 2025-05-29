@@ -1,10 +1,7 @@
 #include <mpi.h>
-#include <cmath>
-#include <cstdlib>
-#include <fstream>
-#include <iostream>
-
-using namespace std;
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 double f(double x) {
     return exp(cos(x));
@@ -30,7 +27,7 @@ int main(int argc, char* argv[]) {
 
     if (argc < 4) {
         if (rank == 0) {
-            cerr << "Usage: " << argv[0] << " a b n\n";
+            fprintf(stderr, "Usage: %s a b n\n", argv[0]);
         }
         MPI_Finalize();
         return 1;
@@ -54,11 +51,18 @@ int main(int argc, char* argv[]) {
 
     if (rank == 0) {
         double elapsed = end - start;
-        ofstream fout("result_" + to_string(size) + ".txt");
-        fout << "Processes:"<< size << "\n";
-        fout << "Time:"<< elapsed << "\n";
-        fout << "Result:"<< global_result << "\n";
-        fout.close(); 
+
+        char filename[64];
+        sprintf(filename, "result_%d.txt", size);
+        FILE* fout = fopen(filename, "w");
+        if (fout != NULL) {
+            fprintf(fout, "Processes:%d\n", size);
+            fprintf(fout, "Time:%f\n", elapsed);
+            fprintf(fout, "Result:%lf\n", global_result);
+            fclose(fout);
+        } else {
+            fprintf(stderr, "Error opening file for writing.\n");
+        }
     }
 
     MPI_Finalize();
