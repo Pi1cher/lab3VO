@@ -54,8 +54,8 @@ int main(int argc, char* argv[]) {
 
     if (rank == 0) {
         double elapsed = end - start;
-        ofstream fout("result_" + to_string(threads) + ".txt");
-        fout << "Threads:"<< threads << "\n";
+        ofstream fout("result_" + to_string(size) + ".txt");
+        fout << "Processes:"<< size << "\n";
         fout << "Time:"<< elapsed << "\n";
         fout << "Result:"<< global_result << "\n";
         fout.close(); 
