@@ -6,5 +6,5 @@
 cd $PBS_O_WORKDIR
 ml openmpi
 ml icc
-mpicc -o integral_mpi integral_mpi.cpp -lm
+mpicc -o integral_mpi integral_mpi.c -lm
 mpirun -np 4 ./integral_mpi -19105 -12655 100000000
