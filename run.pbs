@@ -4,6 +4,7 @@
 #PBS -j oe
 
 cd $PBS_O_WORKDIR
-module load openmpi
-mpic++ -o integral_mpi integral_mpi.cpp
-mpirun -np 4 ./integral_mpi -11783 2761 100000000
+ml openmpi
+ml icc
+mpicc -o integral_mpi integral_mpi.cpp -lm
+mpirun -np 4 ./integral_mpi -19105 -12655 100000000
