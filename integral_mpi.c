@@ -10,7 +10,8 @@ double f(double x) {
 double local_trapezoidal(double a, double b, int n) {
     double h = (b - a) / n;
     double sum = 0.0;
-    for (int i = 1; i < n; ++i) {
+    int i;
+    for (i = 1; i < n; ++i) {
         double x = a + i * h;
         sum += f(x);
     }
